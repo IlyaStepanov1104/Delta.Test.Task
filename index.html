@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delta Test Task</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="bower_components/chartist/dist/chartist.min.css">
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/chartist/dist/chartist.min.js"></script>
+</head>
+<body>
+<table>
+    <thead>
+    <tr>
+        <th>Показатель</th>
+        <th>Текущий день</th>
+        <th>Вчера</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr id="revenue">
+        <td>Выручка, руб</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td colspan="3" id="revenue_graphics" class="graphics"></td>
+    </tr>
+    <tr id="average_check">
+        <td>Средний чек, руб</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td colspan="3" id="average_check_graphics" class="graphics"></td>
+    </tr>
+    <tr id="count_check">
+        <td>Количество чеков</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td colspan="3" id="count_check_graphics" class="graphics"></td>
+    </tr>
+    </tbody>
+</table>
+    <script>
+        function getSeries(data, par) {
+            let res = [];
+            for (let value in data) {
+                if (par === 'price') {
+                    res.push(parseInt(data[value].price));
+                } else {
+                    res.push(parseInt(data[value].date.split('-')[2]));
+                }
+            }
+            return res;
+        }
+        $(function () {
+            $.ajax({
+                url: '/get_data.php',
+                method: 'POST',
+                dataType: 'json',
+                data: {'type': 'last', 'table': {1: 'revenue', 2: 'average_check', 3: 'count_check'}},
+                success: function (data) {
+                    if (data.type === 'successful') {
+                        for (let table_name in data.result) {
+                            let table = $('#' + table_name);
+                            $(table.children()[1]).html(data.result[table_name][0].price);
+                            let percent = Math.round(data.result[table_name][0].price * 100 / data.result[table_name][1].price) - 100;
+                            if (percent < 0) {
+                                $(table.children()[2]).html(data.result[table_name][1].price + '<span class="low">' + percent + '%</span>');
+                            } else {
+                                $(table.children()[2]).html(data.result[table_name][1].price + '<span class="high">+' + percent + '%</span>');
+                            }
+
+                        }
+                    }
+                }
+            })
+        });
+
+        let tables = ['revenue', 'average_check', 'count_check'];
+        for (let i in tables) {
+            let table_name = tables[i];
+            $('#' + table_name).on('click', function (){
+                $.ajax({
+                    url: '/get_data.php',
+                    method: 'POST',
+                    dataType: 'json',
+                    data: {'type': 'all', 'table': table_name},
+                    success: function(result){
+                        let data = {
+                            labels: getSeries(result.data, 'date'),
+                            series: [getSeries(result.data, 'price')],
+                        };
+                        new Chartist.Line('#' + table_name + '_graphics', data);
+                    }
+                });
+                $('#' + table_name + '_graphics').toggle();
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed&display=swap');
+table{
+    margin: 50px auto;
+    text-align: center;
+}
+th, td{
+    width: 20vw;
+    font-size: 1.5vw;
+    background-color: #F9F9F9;
+    font-weight: 400;
+    font-family: 'Roboto Condensed', sans-serif;
+    padding: 10px;
+}
+th:nth-child(2), td:nth-child(2){
+    background-color: #EDFAFF;
+}
+
+.low, .high{
+    float: right;
+    margin-right: 15px;
+}
+.low{
+    color: red;
+}
+.high{
+    color: green;
+}
+.graphics{
+    display: none;
+    height: 20vw;
+    background-color: #FFFFFF;
+    padding: 2vw 5vw;
+}
